@@ -7,8 +7,8 @@
 .global asm_sum64
 .global asm_zeros
 .global asm_productoEscalar32
+.global asm_productoEscalar16
 .global asm_svc
-
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ Prototipo en "C":
@@ -79,18 +79,16 @@
 
 		mov		r2, 0
 
-	.loop:
+	.loop0:
 		str		r2, [r0], 4	@Cargo valor 0 a la dirección que apunta r0 y apunto en la dirección +4
 		subs	r1, 1		@Decremento valor de longitud directamente en el registro, no hace falta usar otro registro
-		bne		.loop		@Si no es igual a 0, itero.
+		bne		.loop0		@Si no es igual a 0, itero.
        	bx		lr       	@ vuelve adonde fue llamada (especificamente, si "pc"
-       	@probar con cbnz o cbz, siempre hacia adelante
-       	@.loop1:
-                    @ es la direccion, en el codigo del programa, de la
-                    @ instruccion "bl asm_sum" usada para saltar a
-                    @ esta funcion, entonces "lr" contiene ese "pc" + 4).
-                    @ el valor de retorno debe quedar en el registro r0.
-                    @ En este caso, r0 es el resultado de r0 + r1.
+                    		@ es la direccion, en el codigo del programa, de la
+                    		@ instruccion "bl asm_sum" usada para saltar a
+                    		@ esta funcion, entonces "lr" contiene ese "pc" + 4).
+                    		@ el valor de retorno debe quedar en el registro r0.
+                    		@ En este caso, r0 es el resultado de r0 + r1.
 
         @ Otras alternativas para el retorno
         @ mov pc,lr
@@ -116,12 +114,12 @@
     asm_productoEscalar32:
 
 		push	{r4-r5}		/* Pusheo los valores de los registros r4 a r5 para no romper el contexto de quien llamó la funcion */
-	.loop2:
+	.loop32:
 		ldr		r4, [r0], 4	/* Cargo valor r4 a la dirección que apunta r0 y apunto en la dirección +4 */
 		mul		r5, r4, r3	/* Multiplico r5 = r4 * r3 */
 		str		r5, [r1], 4	/* Cargo valor r4 a la dirección que apunta r0 y apunto en la dirección +4 */
 		subs	r2, 1		/* Decremento valor de longitud directamente en el registro, no hace falta usar otro registro */
-		bne		.loop2		/* Si no es igual a 0, itero. */
+		bne		.loop32		/* Si no es igual a 0, itero. */
 		pop		{r4-r5}
        	bx		lr       @ vuelve adonde fue llamada (especificamente, si "pc"
 
@@ -131,7 +129,41 @@
         @ push {lr} ... pop {pc}
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ Prototipo en "C":
+@	void asm_productoEscalar16( uint16_t *vectorIn, uint16_t *vectorOut
+@								uint32_t longitud, uint16_t escalar);
+@
+@ Parametros recibidos:
+@   r0: *vectorIn
+@   r1: *vectorOut
+@	r2: longitud
+@	r3: escalar
+@	r4: Valor a multiplicar apuntado por r0
+@	r5: Resultado de la multiplicación apuntado por r1
+@
+@ Valor de retorno:
+@   N/A
+@
+.thumb_func
+    asm_productoEscalar16:
 
+		push	{r4-r5}		/* Pusheo los valores de los registros r4 a r5 para no romper el contexto de quien llamó la funcion */
+	.loop12:
+		ldrh	r4, [r0], 2			/* Cargo valor r4 a la dirección que apunta r0 y apunto en la dirección +4, ldr(h) hace la parte alta 0x0000 */
+		mul		r5, r4, r3			/* Multiplico r5 = r4 * r3 */
+@		and		r5, r5, 0x0000FFFF	/* Hago operación logica AND sobre la parte baja del registro para que solo sean 16 bits los devueltos */
+		strh	r5, [r1], 2			/* Cargo valor r4 a la dirección que apunta r0 y apunto en la dirección +4, str(h) hace la parte alta 0x0000 */
+		subs	r2, 1				/* Decremento valor de longitud directamente en el registro, no hace falta usar otro registro */
+		bne		.loop12				/* Si no es igual a 0, itero. */
+		pop		{r4-r5}
+       	bx		lr       @ vuelve adonde fue llamada (especificamente, si "pc"
+
+        @ Otras alternativas para el retorno
+        @ mov pc,lr
+        @ bx lr
+        @ push {lr} ... pop {pc}
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ Prototipo en "C":
 @   void asm_svc (void)
 @

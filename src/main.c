@@ -175,6 +175,23 @@ void productoEscalar ( void )
 	escalar = 5;
 	asm_productoEscalar32( vectorIn, vectorOut, longitud, escalar);
 
+	escalar = 1;
+}
+
+void productoEscalar16 ( void )
+{
+	uint16_t vectorIn[] = { 43, 256, 23, 65535 };	// 86 ( 0101 0110 ), 512 ( 10 0000 0000 ), 23 ( 0001 0111 ), 102 ( 0110 0110 )
+	uint32_t longitud  = sizeof ( vectorIn ) / sizeof ( uint16_t );
+	uint16_t C_vectorOut[longitud];
+	uint16_t vectorOut[longitud];
+	uint16_t escalar;
+
+	escalar = 2;
+	c_productoEscalar16( vectorIn, C_vectorOut, longitud, escalar);
+
+	escalar = 2;
+	asm_productoEscalar16( vectorIn, vectorOut, longitud, escalar);
+    __BKPT (0);
 }
 
 int main (void)
@@ -187,9 +204,11 @@ int main (void)
 
     productoEscalar ();
 
-    PrivilegiosSVC ();
+    productoEscalar16 ();
 
-    LlamandoAMalloc ();
+ //   PrivilegiosSVC ();
+
+//    LlamandoAMalloc ();
 
     LoopInfinito ();
 }
