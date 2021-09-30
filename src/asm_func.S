@@ -8,6 +8,7 @@
 .global asm_zeros
 .global asm_productoEscalar32
 .global asm_productoEscalar16
+.global asm_productoEscalar12
 .global asm_svc
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -157,6 +158,42 @@
 		bne		.loop12				/* Si no es igual a 0, itero. */
 		pop		{r4-r5}
        	bx		lr       @ vuelve adonde fue llamada (especificamente, si "pc"
+
+        @ Otras alternativas para el retorno
+        @ mov pc,lr
+        @ bx lr
+        @ push {lr} ... pop {pc}
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ Prototipo en "C":
+@	extern void asm_productoEscalar12 (uint16_t * vectorIn, uint16_t * vectorOut,
+@								uint32_t longitud, uint16_t escalar);
+@
+@ Parametros recibidos:
+@   r0: *vectorIn
+@   r1: *vectorOut
+@	r2: longitud
+@	r3: escalar
+@	r4: Valor a multiplicar apuntado por r0
+@	r5: Resultado de la multiplicación apuntado por r1 y luego de la saturación
+@
+@ Valor de retorno:
+@   N/A
+@
+.thumb_func
+    asm_productoEscalar12:
+
+		push	{r4-r5}		/* Pusheo los valores de los registros r4 a r5 para no romper el contexto de quien llamó la funcion */
+	.loop16:
+		ldrh	r4, [r0], 2			/* Cargo valor r4 a la dirección que apunta r0 y apunto en la dirección +4, ldr(h) hace la parte alta 0x0000 */
+		mul		r5, r4, r3			/* Multiplico r5 = r4 * r3 */
+		usat 	r5, 12, r5			/* Instrucción para logica saturada sin signo */
+@		and		r5, r5, 0x0000FFFF	/* Hago operación logica AND sobre la parte baja del registro para que solo sean 16 bits los devueltos */
+		strh	r5, [r1], 2			/* Cargo valor r4 a la dirección que apunta r0 y apunto en la dirección +4, str(h) hace la parte alta 0x0000 */
+		subs	r2, 1				/* Decremento valor de longitud directamente en el registro, no hace falta usar otro registro */
+		bne		.loop16				/* Si no es igual a 0, itero. */
+		pop		{r4-r5}
+       	bx		lr
 
         @ Otras alternativas para el retorno
         @ mov pc,lr
