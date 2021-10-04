@@ -1,0 +1,79 @@
+A - Describa brevemente los diferentes perfiles de familias de microprocesadores/microcontroladores de ARM. Explique alguna de sus diferencias características.
+
+- Cortex A: Procesadores de aplicaciones que están diseñados para manejar aplicaciones complejas, como sistemas operativos (SO) integrados de alta gama (por ejemplo, iOS, Android, Linux y Windows). Estas aplicaciones requieren la mayor potencia de procesamiento, soporte de sistema de memoria virtual con unidades de administración de memoria (MMU) y, opcionalmente, soporte mejorado de Java y un entorno seguro de ejecución de programas. Los productos de ejemplo incluyen teléfonos inteligentes, tabletas, televisores e incluso servidores informáticos de alta gama.
+
+- Cortex R: Procesadores de tiempo real y alto rendimiento dirigidos principalmente a aplicaciones de tiempo real; se trata de aplicaciones, como controladores de discos duros, controladores de banda base para comunicaciones móviles y sistemas de automoción. Es esencial una alta potencia de procesamiento y gran fiabilidad, y como tambien son importantes la baja latencia y el determinismo.
+
+- Cortex M: Los procesadores apuntan hacia aplicaciones de menor escala, como microcontroladores y el diseño de señales mixtas, donde son importantes criterios como el bajo coste, el bajo consumo, la eficiencia energética y la baja latencia de las interrupciones. Al mismo tiempo, el diseño del procesador tiene que ser fácil de usar y capaz de proporcionar un comportamiento determinista, como se requiere en muchos sistemas de control en tiempo real.- 
+
+1 - Describa brevemente las diferencias entre las familias de procesadores Cortex M0, M3 y M4.
+
+- Cortex M0 / M0+: Implementación mínima para bajo consumo y bajo costo. Los procesadores Cortex-M0, Cortex-M0+ y Cortex-M1 están basados en la arquitectura ARMv6-M.
+
+- Cortex M3 / M4 / M7: Mayor performance, agregan funcionalidades para procesamiento digital de señales, unidad de protección de memoria, etc. Los procesadores Cortex-M3 y Cortex-M4 están basados en ARMv7-M. Existen algunas diferencias en sus diseños internos, que permiten que el procesador Cortex-M4 ofrezca un mayor rendimiento en aplicaciones DSP y admita operaciones de punto flotante. Como resultado, algunas de las instrucciones disponibles en ambos procesadores se pueden ejecutar en menos ciclos de reloj en el Cortex-M4.
+
+2 - ¿Por qué se dice que el set de instrucciones Thumb permite mayor densidad de código? Explique
+
+https://embeddedgurus.com/state-space/2009/03/insects-of-the-computer-world/ "Insects of the computer world"
+
+- El conjunto de instrucciones Thumb utilizado en los procesadores ARM Cortex-M proporciona una excelente densidad de código en comparación con otras arquitecturas de procesador. Muchos desarrolladores de software que migran desde los microcontroladores de 8 bits verán una reducción significativa en el tamaño del programa requerido, mientras que el rendimiento también mejorará significativamente. La densidad de código de los procesadores Cortex-M también es mejor que la de muchas arquitecturas arquitecturas de 16 y 32 bits. También hay otras ventajas:
+
+* La tecnología Thumb-2 permite que las instrucciones de 16 bits y las de 32 bits trabajen juntos sin ninguna sobrecarga de cambio de estado. La mayoría de las operaciones sencillas pueden pueden llevarse a cabo con una instrucción de 16 bits.
+* Varios modos de direccionamiento de memoria para un acceso eficaz a los datos
+* Se pueden realizar múltiples accesos a la memoria con una sola instrucción
+* Las instrucciones de división por hardware y de multiplicación y acumulación (MAC) tanto en el Cortex-M3 como en el Cortex-M4
+* Instrucciones para el procesamiento de campos de bits en Cortex-M3/M4
+* Soporte de instrucciones SIMD (Single Instruction, Multiple Data) en Cortex-M4
+* Existen instrucciones opcionales de punto flotante de precisión única en Cortex-M4
+
+Además de reducir el coste del sistema, la alta densidad de código también reduce el consumo de energía porque puedes utilizar un dispositivo con menos memoria flash. También puede copiar algunas partes del código del programa (por ejemplo, los manejadores de interrupción) en la SRAM para una ejecución de alta velocidad sin preocuparse de que esto ocupe demasiado espacio en la SRAM.
+
+3 - ¿Qué entiende por arquitectura load-store? ¿Qué tipo de instrucciones no posee este tipo de arquitectura?
+
+- Al igual que cualquier otro procesador ARM, los procesadores Cortex-M se basan en una arquitectura de almacenamiento de carga. Esto significa que los datos deben cargarse desde la memoria, procesarse y luego volver a escribirse en la memoria utilizando una serie de instrucciones independientes. Por ejemplo, para incrementar un valor de datos almacenado en SRAM, el procesador necesita usar una instrucción para leer los datos de SRAM y ponerlos en un registro dentro del procesador, una segunda instrucción para incrementar el valor del registro y luego una tercera instrucción para volver a escribir el valor en la memoria.
+
+4 - ¿Cómo es el mapa de memoria de la familia?
+
+- El espacio de direcciones de 4GB de los procesadores Cortex-M está dividido en varias regiones de memoria. 
+La partición se basa en usos típicos, por lo que las diferentes áreas están diseñadas para usarse principalmente para:
+* Accesos de código de programa (p. Ej., Región de CÓDIGO)
+* Accesos a datos (por ejemplo, región SRAM)
+* Periféricos (por ejemplo, región periférica)
+* Componentes de debug y control interno del procesador (p. Ej., Bus periférico privado)
+
+5 - ¿Qué ventajas presenta el uso de los “shadowed pointers” del PSP y el MSP?
+
+El MSP se utiliza para el kernel del sistema operativo y los controladores de interrupciones. El PSP es utilizado por tareas de aplicación.
+
+Las operaciones de pila como las instrucciones PUSH y POP, y la mayoría de las instrucciones que utilizan SP (R13) utilizan el puntero de pila seleccionado actualmente. También puede acceder a MSP y PSP directamente usando las instrucciones de MRS y MSR. En aplicaciones simples sin un sistema operativo integrado o RTOS, puede usar el MSP para todas las operaciones e ignorar el PSP.
+En sistemas con un sistema operativo integrado o RTOS, los controladores de excepciones (incluida parte del kernel del sistema operativo) utilizan el MSP, mientras que las tareas de la aplicación utilizan el PSP. Cada tarea de la aplicación tiene su propio espacio de pila (Figura 10.1), y el código de cambio de contexto en el sistema operativo actualiza el PSP cada vez que se cambia el contexto.
+
+# Si una tarea de aplicación encuentra un problema que conduce a una corrupción de la pila, es probable que la pila utilizada por el kernel del sistema operativo y otras tareas aún esté intacta, lo que ayuda a mejorar la confiabilidad del sistema.
+# El espacio de pila para cada tarea solo necesita cubrir el uso máximo de pila más un nivel de marco de pila (máximo 9 palabras incluyendo relleno en Cortex-M3 o Cortex-M4 sin unidad de coma flotante, o máximo 27 palabras para Cortex-M4 con coma flotante unidad). El espacio de pila necesario para el ISR y el manejo de interrupciones anidadas se asigna solo en la pila principal.
+# Facilita la creación de un sistema operativo eficiente para los procesadores Cortex-M.
+#Un sistema operativo también puede utilizar la Unidad de protección de memoria (MPU) para definir la región de la pila que puede usar una tarea de aplicación. Si una tarea de aplicación tiene un problema de desbordamiento de pila, la MPU puede activar una excepción de falla MemManage y evitar que la tarea sobrescriba regiones de memoria fuera del espacio de pila asignado para esta tarea.
+# Después del encendido, el MSP se inicializa desde la tabla de vectores como parte de la secuencia de reinicio del procesador. El código de inicio C agregado por la cadena de herramientas también puede llevar a cabo otra etapa de inicialización de la pila para la pila principal. Entonces es posible comenzar a usar PSP inicializándolo usando la instrucción MSR y luego escribir en el registro CONTROL para configurar SPSEL, pero es poco común hacerlo.
+
+6 - Describa los diferentes modos de privilegio y operación del Cortex M, sus relaciones y como se conmuta de uno al otro. 
+Describa un ejemplo en el que se pasa del modo privilegiado a no priviligiado y nuevamente a privilegiado.
+
+- Los procesadores Cortex-M3 y Cortex-M4 tienen dos estados de funcionamiento y dos modos. Además, los procesadores pueden tener niveles de acceso privilegiados y no privilegiados. El nivel de acceso privilegiado puede acceder a todos los recursos del procesador, mientras que el nivel de acceso sin privilegios significa que algunas regiones de memoria son inaccesibles y algunas operaciones no se pueden utilizar.
+
+Estados de operación
+• Debug state: cuando el procesador se detiene (por ejemplo, por el depurador o después de alcanzar un punto de interrupción), entra en estado de depuración y deja de ejecutar instrucciones.
+• Thumb state: si el procesador está ejecutando un código de programa (instrucciones de pulgar), se encuentra en el estado de pulgar. A diferencia de los procesadores ARM Ò clásicos como ARM7TDMI, no hay estado ARM porque los procesadores Cortex-M no admiten el conjunto de instrucciones ARM.
+
+Modos de operación
+• Modo de administrador: cuando se ejecuta un administrador de excepciones, como una rutina de servicio de interrupción (ISR). Cuando está en modo de controlador, el procesador siempre tiene un nivel de acceso privilegiado.
+• Modo de subproceso: cuando se ejecuta un código de aplicación normal, el procesador puede estar en el nivel de acceso privilegiado o en el nivel de acceso no privilegiado. Esto está controlado por un registro especial llamado "CONTROL".
+
+El software puede cambiar el procesador en el modo de subproceso privilegiado al modo de subproceso sin privilegios. Sin embargo, no puede cambiar de no privilegiado a privilegiado.
+Si es necesario, el procesador debe utilizar el mecanismo de excepción para manejar el cambio.
+
+La separación de los niveles de acceso privilegiado y no privilegiado permite a los diseñadores de sistemas desarrollar sistemas integrados robustos al proporcionar un mecanismo para salvaguardar los accesos a la memoria a las regiones críticas y al proporcionar un modelo de seguridad básico.
+
+Por ejemplo, un sistema puede contener un kernel de sistema operativo integrado que se ejecuta en un nivel de acceso privilegiado y tareas de aplicación que se ejecutan en un nivel de acceso sin privilegios.
+
+
+
+
