@@ -150,13 +150,13 @@
     asm_productoEscalar16:
 
 		push	{r4-r5}		/* Pusheo los valores de los registros r4 a r5 para no romper el contexto de quien llamó la funcion */
-	.loop12:
+	.loop16:
 		ldrh	r4, [r0], 2			/* Cargo valor r4 a la dirección que apunta r0 y apunto en la dirección +4, ldr(h) hace la parte alta 0x0000 */
 		mul		r5, r4, r3			/* Multiplico r5 = r4 * r3 */
 @		and		r5, r5, 0x0000FFFF	/* Hago operación logica AND sobre la parte baja del registro para que solo sean 16 bits los devueltos */
 		strh	r5, [r1], 2			/* Cargo valor r4 a la dirección que apunta r0 y apunto en la dirección +4, str(h) hace la parte alta 0x0000 */
 		subs	r2, 1				/* Decremento valor de longitud directamente en el registro, no hace falta usar otro registro */
-		bne		.loop12				/* Si no es igual a 0, itero. */
+		bne		.loop16				/* Si no es igual a 0, itero. */
 		pop		{r4-r5}
        	bx		lr       @ vuelve adonde fue llamada (especificamente, si "pc"
 
@@ -185,14 +185,14 @@
     asm_productoEscalar12:
 
 		push	{r4-r5}		/* Pusheo los valores de los registros r4 a r5 para no romper el contexto de quien llamó la funcion */
-	.loop16:
+	.loopu12:
 		ldrh	r4, [r0], 2			/* Cargo valor r4 a la dirección que apunta r0 y apunto en la dirección +4, ldr(h) hace la parte alta 0x0000 */
 		mul		r5, r4, r3			/* Multiplico r5 = r4 * r3 */
 		usat 	r5, 12, r5			/* Instrucción para logica saturada sin signo */
 @		and		r5, r5, 0x0000FFFF	/* Hago operación logica AND sobre la parte baja del registro para que solo sean 16 bits los devueltos */
 		strh	r5, [r1], 2			/* Cargo valor r4 a la dirección que apunta r0 y apunto en la dirección +4, str(h) hace la parte alta 0x0000 */
 		subs	r2, 1				/* Decremento valor de longitud directamente en el registro, no hace falta usar otro registro */
-		bne		.loop16				/* Si no es igual a 0, itero. */
+		bne		.loopu12				/* Si no es igual a 0, itero. */
 		pop		{r4-r5}
        	bx		lr
 
@@ -220,19 +220,19 @@
 .thumb_func
     asm_productoEscalarNoUSAT12:
 
-		push	{r4-r5}		/* Pusheo los valores de los registros r4 a r5 para no romper el contexto de quien llamó la funcion */
+		push	{r4-r6}		/* Pusheo los valores de los registros r4 a r5 para no romper el contexto de quien llamó la funcion */
 	.loop12:
 		ldrh	r4, [r0], 2			/* Cargo valor r4 a la dirección que apunta r0 y apunto en la dirección +4, ldr(h) 								 hace la parte alta 0x0000 */
 		mul		r5, r4, r3			/* Multiplico r5 = r4 * r3 */
 @		usat 	r5, 12, r5			/* Instrucción para logica saturada sin signo */
-		ands	r5, r5, 0xF000		/* Operación logica AND de los bits 13 a 16 */
+		ands	r6, r5, 0xF000		/* Operación logica AND de los bits 13 a 16 */
 		beq		.ovf_mult12
 		mov		r5,#0xFFF
 	.ovf_mult12:
 		strh	r5, [r1], 2			/* Cargo valor r4 a la dirección que apunta r0 y apunto en la dirección +4, str(h) 									hace la parte alta 0x0000 */
 		subs	r2, 1				/* Decremento valor de longitud directamente en el registro, no hace falta usar otro 								registro */
 		bne		.loop12				/* Si no es igual a 0, itero. */
-		pop		{r4-r5}
+		pop		{r4-r6}
        	bx		lr
 
         @ Otras alternativas para el retorno

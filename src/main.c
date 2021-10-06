@@ -191,7 +191,7 @@ void productoEscalar16 ( void )
 
 	escalar = 2;
 	asm_productoEscalar16( vectorIn, vectorOut, longitud, escalar);
-	__BKPT (0);
+
 }
 
 void productoEscalar12 ( void )
@@ -199,6 +199,7 @@ void productoEscalar12 ( void )
 	uint16_t vectorIn[] = { 43, 256, 23, 65535 };	// 86 ( 0101 0110 ), 512 ( 10 0000 0000 ), 23 ( 0001 0111 ), 102 ( 0110 0110 )
 	uint32_t longitud  = sizeof ( vectorIn ) / sizeof ( uint16_t );
 	uint16_t C_vectorOut[longitud];
+	uint16_t U_vectorOut[longitud];
 	uint16_t vectorOut[longitud];
 	uint16_t escalar;
 
@@ -208,6 +209,10 @@ void productoEscalar12 ( void )
 
 	escalar = 3;
 	asm_productoEscalar12( vectorIn, vectorOut, longitud, escalar);
+	__BKPT (0);
+
+	escalar = 3;
+	asm_productoEscalarNoUSAT12( vectorIn, U_vectorOut, longitud, escalar);
 	__BKPT (0);
 }
 
