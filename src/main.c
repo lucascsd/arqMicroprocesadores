@@ -5,6 +5,11 @@
 #include <stdlib.h>
 #include <stdnoreturn.h>
 
+// Variables para contar ciclos
+volatile uint32_t * DWT_CTRL   = (uint32_t *)0xE0001000;
+volatile uint32_t * DWT_CYCCNT = (uint32_t *)0xE0001004;
+
+volatile uint32_t ciclos_c=0,ciclos_asm=0, ciclos_no_usat=0;
 
 // Variable que se incrementa cada vez que se llama al handler de interrupcion
 // del SYSTICK.
@@ -18,6 +23,8 @@ static void Inicio (void)
 	Board_Init ();
 	SystemCoreClockUpdate ();
 	SysTick_Config (SystemCoreClock / 1000);
+
+	*DWT_CTRL  |= 1;
 }
 
 
@@ -165,17 +172,18 @@ void productoEscalar ( void )
 	uint32_t C_vectorOut[longitud];
 	uint32_t vectorOut[longitud];
 	uint32_t escalar;
+	uint32_t ciclos_c=0,ciclos_asm=0;
 
 	escalar = 3;
+	*DWT_CYCCNT = 0;
 	c_productoEscalar32( vectorIn, C_vectorOut, longitud, escalar);
+	ciclos_c = *DWT_CYCCNT;
 
 	escalar = 3;
+	*DWT_CYCCNT = 0;
 	asm_productoEscalar32( vectorIn, vectorOut, longitud, escalar);
+	ciclos_asm = *DWT_CYCCNT;
 
-	escalar = 5;
-	asm_productoEscalar32( vectorIn, vectorOut, longitud, escalar);
-
-	escalar = 1;
 }
 
 void productoEscalar16 ( void )
@@ -196,28 +204,50 @@ void productoEscalar16 ( void )
 
 void productoEscalar12 ( void )
 {
-	uint16_t vectorIn[] = { 43, 256, 23, 65535 };	// 86 ( 0101 0110 ), 512 ( 10 0000 0000 ), 23 ( 0001 0111 ), 102 ( 0110 0110 )
+	uint16_t vectorIn[] = { 43, 256, 23, 100, 56, 878, 2, 35, 38, 98, 365, 12, 61, 4, 32,
+								42, 1256, 53, 130, 56, 78, 42, 75, 38, 8, 265, 128, 63, 1, 320};
 	uint32_t longitud  = sizeof ( vectorIn ) / sizeof ( uint16_t );
 	uint16_t C_vectorOut[longitud];
 	uint16_t U_vectorOut[longitud];
 	uint16_t vectorOut[longitud];
 	uint16_t escalar;
 
-	escalar = 3;
+	escalar = 15;
+	*DWT_CYCCNT = 0;
 	c_productoEscalar12( vectorIn, C_vectorOut, longitud, escalar);
+	ciclos_c = *DWT_CYCCNT;
 	__BKPT (0);
 
-	escalar = 3;
+	escalar = 15;
+	*DWT_CYCCNT = 0;
 	asm_productoEscalar12( vectorIn, vectorOut, longitud, escalar);
+	ciclos_asm = *DWT_CYCCNT;
 	__BKPT (0);
 
-	escalar = 3;
+	escalar = 15;
+	*DWT_CYCCNT = 0;
 	asm_productoEscalarNoUSAT12( vectorIn, U_vectorOut, longitud, escalar);
+	ciclos_no_usat = *DWT_CYCCNT;
+	__BKPT (0);
+}
+
+void filtroVentana( void )
+{
+	uint16_t vectorIn[] = { 43, 256, 23, 100, 56, 878, 2, 35, 38, 98, 365, 12, 61, 4, 32,
+							42, 1256, 53, 130, 56, 78, 42, 75, 38, 8, 265, 128, 63, 1, 320};
+	uint32_t longitudVectorIn  = sizeof ( vectorIn ) / sizeof ( uint16_t );
+	uint16_t C_vectorOut[longitudVectorIn];
+	uint16_t U_vectorOut[longitudVectorIn];
+	uint16_t vectorOut[longitudVectorIn];
+	uint16_t escalar;
+
+	c_filtroVentana10( vectorIn, vectorOut, longitudVectorIn );
 	__BKPT (0);
 }
 
 int main (void)
 {
+
 	Inicio ();
 
 /*
@@ -231,6 +261,7 @@ int main (void)
 */
 	productoEscalar12 ();
 
+//	filtroVentana();
 	//   PrivilegiosSVC ();
 
 	//    LlamandoAMalloc ();
