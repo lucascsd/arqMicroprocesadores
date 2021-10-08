@@ -10,6 +10,7 @@
 .global asm_productoEscalar16
 .global asm_productoEscalar12
 .global asm_productoEscalarNoUSAT12
+.global asm_filtroVentana10
 .global asm_svc
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -203,6 +204,60 @@
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ Prototipo en "C":
+@	extern void asm_filtroVentana10( uint16_t * vectorIn, uint16_t * vectorOut,
+@								uint32_t longitudVectorIn );
+@
+@ Parametros recibidos:
+@   r0: *vectorIn
+@   r1: *vectorOut
+@	r2: longitudVectorIn
+@
+@	r3: suma auxiliar
+@	r4: posicion ventana
+@	r5: arreglo auxiliar de suma
+@	r6: x
+@	r7: resultado
+@ Valor de retorno:
+@   N/A
+@
+.thumb_func
+    asm_filtroVentana10:
+
+		push	{r4-r7}		/* Pusheo los valores de los registros r4 a r5 para no romper el contexto de quien llamó la funcion */
+		mov		r7, 0		/* index, Copio el valor 0 a r7 */
+		mov		r6, 0
+		mov		r5, 0
+		mov		r4, 0		/* Posicion = 0 */
+		mov		r3, 0		/* Posicion = 0 */
+	.loopindex:
+		ldrh	r5, [r0], 2			/* Cargo valor a r5 de la dirección que apunta r0 y apunto en la dirección +2, ldr(h) 								 hace la parte alta 0x0000 */
+		add		r3, r3, r5			/* r3 = r3 + r5 */
+		cmp		r7, 10
+		blo		.suma10
+
+	.Mayora10:
+		ldrh	r5, [r0, -22]
+		sub		r3, r3, r5			/* r3 = r3 - r5 */
+		add		r4, #1				/* posicion + 1 */
+
+	.suma10:
+		add		r6, r7, #1			/* x = index + 1 */
+		sub		r6, r4				/* r6 = r6 - r4 */
+		udiv	r5, r3, r6			/* *vectorOut = sumaAux / x */
+		strh	r5, [r1], 2			/* Cargo valor r3 a la dirección que apunta r0 y apunto en la dirección +4, str(h) 									hace la parte alta 0x0000 */
+		add		r7, #1
+		subs	r2, #1				/* Decremento valor de longitud directamente en el registro, no hace falta usar otro 								registro */
+		bne		.loopindex				/* Si no es igual a 0, itero. */
+		pop		{r4-r7}
+       	bx		lr
+
+        @ Otras alternativas para el retorno
+        @ mov pc,lr
+        @ bx lr
+        @ push {lr} ... pop {pc}
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ Prototipo en "C":
 @	extern void asm_productoEscalarSinSat12 (uint16_t * vectorIn, uint16_t * vectorOut,
 @								uint32_t longitud, uint16_t escalar);
 @
@@ -234,12 +289,6 @@
 		bne		.loop12				/* Si no es igual a 0, itero. */
 		pop		{r4-r6}
        	bx		lr
-
-        @ Otras alternativas para el retorno
-        @ mov pc,lr
-        @ bx lr
-        @ push {lr} ... pop {pc}
-
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ Prototipo en "C":
 @   void asm_svc (void)

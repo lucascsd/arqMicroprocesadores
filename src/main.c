@@ -234,14 +234,22 @@ void productoEscalar12 ( void )
 void filtroVentana( void )
 {
 	uint16_t vectorIn[] = { 43, 256, 23, 100, 56, 878, 2, 35, 38, 98, 365, 12, 61, 4, 32,
-							42, 1256, 53, 130, 56, 78, 42, 75, 38, 8, 265, 128, 63, 1, 320};
+			42, 1256, 53, 130, 56, 78, 42, 75, 38, 8, 265, 128, 63, 1, 320};
 	uint32_t longitudVectorIn  = sizeof ( vectorIn ) / sizeof ( uint16_t );
-	uint16_t C_vectorOut[longitudVectorIn];
-	uint16_t U_vectorOut[longitudVectorIn];
 	uint16_t vectorOut[longitudVectorIn];
-	uint16_t escalar;
 
+	for ( uint32_t i = 0; i < longitudVectorIn; i++ ) vectorOut[i] = 0;
+
+	*DWT_CYCCNT = 0;
 	c_filtroVentana10( vectorIn, vectorOut, longitudVectorIn );
+	ciclos_c = *DWT_CYCCNT;
+	__BKPT (0);
+
+	for ( uint32_t i = 0; i < longitudVectorIn; i++ ) vectorOut[i] = 0;
+
+	*DWT_CYCCNT = 0;
+	asm_filtroVentana10( vectorIn, vectorOut, longitudVectorIn );
+	ciclos_asm = *DWT_CYCCNT;
 	__BKPT (0);
 }
 
@@ -259,9 +267,10 @@ int main (void)
 
 	productoEscalar16 ();
 */
-	productoEscalar12 ();
+//	productoEscalar12 ();
 
-//	filtroVentana();
+	filtroVentana();
+
 	//   PrivilegiosSVC ();
 
 	//    LlamandoAMalloc ();
