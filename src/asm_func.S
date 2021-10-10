@@ -12,6 +12,7 @@
 .global asm_productoEscalarNoUSAT12
 .global asm_filtroVentana10
 .global asm_pack32to16
+.global asm_max
 .global asm_svc
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -302,7 +303,7 @@
 @	r2: longitud
 @	r3: Valor de entrada apuntado
 @	r4: Valor a multiplicar apuntado por r0
-@	r5: Resultado de la multiplicación apuntado por r1 y luego de la saturación
+@
 @
 @ Valor de retorno:
 @   N/A
@@ -317,6 +318,43 @@
 		strh	r4, [r1], 2			/* Cargo valor en r4 a la dirección que apunta r0 y apunto en la dirección +2, str(h) 									hace la parte alta 0x0000 */
 		subs	r2, 1				/* Decremento valor de longitud directamente en el registro, no hace falta usar otro 								registro */
 		bne		.looplsr			/* Si no es igual a 0, itero. */
+		pop		{r4-r6}
+       	bx		lr
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ Prototipo en "C":
+@	extern int32_t asm_max (int32_t * vectorIn, uint32_t longitud);
+@
+@
+@ Parametros recibidos:
+@   r0: *vectorIn
+@	r1: longitud
+@	r2: Valor de entrada apuntado
+@	r3: Maximo valor acumulado
+@	r4: Guardo la longitud
+@	r5: Guardo la poscion actual decremental
+@
+@ Valor de retorno:
+@   N/A
+@
+.thumb_func
+    asm_max:
+
+		push	{r4-r6}				/* Pusheo los valores de los registros r4 a r5 para no romper el contexto de quien llamó la funcion */
+		mov		r4, r1				/* Guardar la longitud */
+		ldr		r2, [r0], #4		/* Cargo valor en r3 que apunta r0 y apunto en la dirección +4 */
+		sub		r1, 1				/* Decremento valor de longitud directamente en el registro, no hace falta usar otro registro */
+		mov		r3, r2				/* Maximo valor encontrado, en este caso es el primer valor */
+	.loopmax:
+		ldr		r2, [r0], 4			/* Cargo valor en r2 que apunta r0 y apunto en la dirección +4 */
+		cmp		r3, r2				/* Comparo valorAux - vectorIn 		*/
+		bgt		.loopmenor			/* Signed greater than 				*/
+		mov		r3, r2				/* Maximo valor encontrado 			*/
+		mov		r5, r1				/* Almaceno posicion actual			*/
+	.loopmenor:
+		subs	r1, 1				/* Decremento valor de longitud directamente en el registro, no hace falta usar otro registro */
+		bne		.loopmax			/* Si no es igual a 0, itero. 		*/
+		sub		r0, r4, r5			/* r0 = longitud - posicion actual	*/
 		pop		{r4-r6}
        	bx		lr
 

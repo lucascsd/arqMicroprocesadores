@@ -272,6 +272,27 @@ void corrimiento ( void )
 
 }
 
+void maximoValor ( void )
+{
+	int32_t vectorIn[] = { 0x00300000, 0x00561000, 0x12300000, 0x81000000, 0x94650000, 0x08780000, 0xA1290000, 0xFFF01350,
+			0x5050F1F1, 0xFF320122 };
+	uint32_t longitudVectorIn  = sizeof ( vectorIn ) / sizeof ( int32_t );
+	int32_t vectorMax = 0;
+	int32_t vectorMaxAsm = 0;
+
+	*DWT_CYCCNT = 0;
+	vectorMax = c_max ( vectorIn, longitudVectorIn );
+	ciclos_c = *DWT_CYCCNT;
+	__BKPT (0);
+
+	*DWT_CYCCNT = 0;
+	vectorMaxAsm = asm_max ( vectorIn, longitudVectorIn );
+	ciclos_c = *DWT_CYCCNT;
+	__BKPT (0);
+
+}
+
+
 int main (void)
 {
 
@@ -290,7 +311,9 @@ int main (void)
 
 	filtroVentana();
 */
-	corrimiento();
+//	corrimiento();
+
+	maximoValor();
 
 	//   PrivilegiosSVC ();
 
