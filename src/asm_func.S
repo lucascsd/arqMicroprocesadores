@@ -11,6 +11,7 @@
 .global asm_productoEscalar12
 .global asm_productoEscalarNoUSAT12
 .global asm_filtroVentana10
+.global asm_pack32to16
 .global asm_svc
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -289,6 +290,36 @@
 		bne		.loop12				/* Si no es igual a 0, itero. */
 		pop		{r4-r6}
        	bx		lr
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ Prototipo en "C":
+@	extern void asm_pack32to16 ( int32_t * vectorIn, int16_t *vectorOut, uint32_t longitud );
+@
+@
+@ Parametros recibidos:
+@   r0: *vectorIn
+@   r1: *vectorOut
+@	r2: longitud
+@	r3: Valor de entrada apuntado
+@	r4: Valor a multiplicar apuntado por r0
+@	r5: Resultado de la multiplicación apuntado por r1 y luego de la saturación
+@
+@ Valor de retorno:
+@   N/A
+@
+.thumb_func
+    asm_pack32to16:
+
+		push	{r4-r6}				/* Pusheo los valores de los registros r4 a r5 para no romper el contexto de quien llamó la funcion */
+	.looplsr:
+		ldr		r3, [r0], 4			/* Cargo valor en r3 que apunta r0 y apunto en la dirección +4, ldr(h) 								 hace la parte alta 0x0000 */
+		mov		r4, r3, lsr #16		/* Muevo a r4 el contenido de r3 >> 16 */
+		strh	r4, [r1], 2			/* Cargo valor en r4 a la dirección que apunta r0 y apunto en la dirección +2, str(h) 									hace la parte alta 0x0000 */
+		subs	r2, 1				/* Decremento valor de longitud directamente en el registro, no hace falta usar otro 								registro */
+		bne		.looplsr			/* Si no es igual a 0, itero. */
+		pop		{r4-r6}
+       	bx		lr
+
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ Prototipo en "C":
 @   void asm_svc (void)

@@ -246,11 +246,30 @@ void filtroVentana( void )
 	__BKPT (0);
 
 	for ( uint32_t i = 0; i < longitudVectorIn; i++ ) vectorOut[i] = 0;
-
+	__BKPT (0);
 	*DWT_CYCCNT = 0;
 	asm_filtroVentana10( vectorIn, vectorOut, longitudVectorIn );
 	ciclos_asm = *DWT_CYCCNT;
 	__BKPT (0);
+}
+
+void corrimiento ( void )
+{
+	int32_t vectorIn[] = { 0x00300000, 0x00561000, 0x12300000, 0x81000000, 0x94650000, 0x08780000, 0xA1290000, 0xFFF01350,
+			0x5050F1F1, 0xFF320122 };
+	uint32_t longitudVectorIn  = sizeof ( vectorIn ) / sizeof ( int32_t );
+	int16_t vectorOut[longitudVectorIn];
+	int16_t vectorOutAsm[longitudVectorIn];
+	*DWT_CYCCNT = 0;
+	c_pack32to16 ( vectorIn, vectorOut, longitudVectorIn );
+	ciclos_c = *DWT_CYCCNT;
+	__BKPT (0);
+
+	*DWT_CYCCNT = 0;
+	asm_pack32to16 ( vectorIn, vectorOutAsm, longitudVectorIn );
+	ciclos_c = *DWT_CYCCNT;
+	__BKPT (0);
+
 }
 
 int main (void)
@@ -266,10 +285,12 @@ int main (void)
 	productoEscalar ();
 
 	productoEscalar16 ();
-*/
-//	productoEscalar12 ();
+
+	productoEscalar12 ();
 
 	filtroVentana();
+*/
+	corrimiento();
 
 	//   PrivilegiosSVC ();
 

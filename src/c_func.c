@@ -94,3 +94,11 @@ void c_filtroVentana10( uint16_t * vectorIn, uint16_t * vectorOut, uint32_t long
 //	}
 
 }
+
+void c_pack32to16 (int32_t * vectorIn, int16_t *vectorOut, uint32_t longitud)
+{
+	for ( uint32_t index = 0; index < longitud; index++)
+	{
+		vectorOut[index] = vectorIn[index] >> 16;
+	}
+}
