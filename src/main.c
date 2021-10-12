@@ -313,6 +313,22 @@ void invertir ()
 
 }
 
+void eco ()
+{
+	uint16_t longitud = 4096;
+	int16_t vectorIn[longitud];
+	int16_t vectorOut[longitud];
+	uint16_t tiempoEco = 20;
+
+	for (uint16_t i = 0; i < longitud; i++) vectorIn[i] = (i*2) + 10;
+
+	*DWT_CYCCNT = 0;
+	c_eco ( vectorIn, vectorOut, longitud, tiempoEco  );
+	ciclos_c = *DWT_CYCCNT;
+	__BKPT (0);
+
+}
+
 int main (void)
 {
 
@@ -335,7 +351,9 @@ int main (void)
 
 //	maximoValor();
 
-	invertir();
+//	invertir();
+
+	eco();
 
 	//   PrivilegiosSVC ();
 

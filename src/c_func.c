@@ -133,3 +133,26 @@ void c_invertir (uint16_t * vector, uint32_t longitud)
 
 	}
 }
+
+void c_eco ( int16_t * vectorIn, int16_t * vectorOut, uint16_t longitud, uint16_t tiempoEco  )
+{
+
+  /*
+  44100 muestras  -------------------  1000ms
+    x = 882    -------------------  20ms
+  */
+  uint32_t N_eco = ( tiempoEco * 44100 ) / 1000;
+  /*
+  for ( uint8_t index = 0; index < N_eco; index++ )
+    vectorOut[index] = vectorIn[index];
+  for ( uint8_t index = N_eco; index < longitud; index++ )
+    vectorOut[index] = vectorIn[index] + vectorIn[index - N_eco]/2;
+  */
+  for ( uint16_t index = 0; index < longitud; index++ )
+  {
+    if ( index >= N_eco )
+      vectorOut[index] = vectorIn[index] + vectorIn[index - N_eco]/2;
+    else
+      vectorOut[index] = vectorIn[index];
+  }
+}
