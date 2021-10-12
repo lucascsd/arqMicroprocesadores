@@ -72,7 +72,44 @@ Reset   = -3.
 NMI     = -2. Interrupción no enmascarable (NMI), se puede generar desde periféricos del propio IC o desde fuentes externas.
 Hard Fault = -1. Corresponde a todas las condiciones de fault y no es posible llamar a un handler.
 
+10. Describa las funciones principales de la pila. ¿Cómo resuelve la arquitectura el llamado a funciones y su retorno?
 
+La pila es una estructura de datos tipo LIFO, donde se almacenan las variables de un conexto cuando se accede a una funcion para luego recuperar ese conexto al regresar a la funcion de origen. De los registros r0 a r3 estan disponibles para trabajar, mientras que los restantes registros deben usarse las acciones PUSH y POP para salvaguardar la informacion del contexto de origen. Si la funcion posee retorno de datos, se usa el registro r0.
+
+11. Describa la secuencia de reset del microprocesador.
+
+Luego del reset y antes de que el procesador comience a ejecutar el programa, los procesadores Cortex-M leen las dos primeras palabras de la memoria. (Direccion 0x00000000). El cominezo del espacio de memoria contiene la tabla de vectores, y las dos primeras palabras en la tabla vectorial son el valor inicial del puntero de la pila principal (MSP) y el vector de reset, que contiene la dirección de inicio del manejador/controlador de reset. Después de que estos registros son leidos, el procesador configura el MSP y el Contador del programa (PC) con estos valores.
+
+12. ¿Qué entiende por “core peripherals”? ¿Qué diferencia existe entre estos y el resto de los periféricos?
+
+13. ¿Cómo se implementan las prioridades de las interrupciones? Dé un ejemplo
+
+14. ¿Qué es el CMSIS? ¿Qué función cumple? ¿Quién lo provee? ¿Qué ventajas aporta?
+
+15. Cuando ocurre una interrupción, asumiendo que está habilitada ¿Cómo opera el microprocesador para atender a la subrutina correspondiente? Explique con un ejemplo
+
+16. Explique las características avanzadas de atención a interrupciones: tail chaining y late arrival.
+
+17. ¿Qué es el systick? ¿Por qué puede afirmarse que su implementación favorece la portabilidad de los sistemas operativos embebidos?
+
+18. ¿Qué funciones cumple la unidad de protección de memoria (MPU)?
+
+19. ¿Cuántas regiones pueden configurarse como máximo? ¿Qué ocurre en caso de haber solapamientos de las regiones? ¿Qué ocurre con las zonas de memoria no cubiertas por las regiones definidas?
+
+20. ¿Para qué se suele utilizar la excepción PendSV? ¿Cómo se relaciona su uso con el resto de las excepciones? Dé un ejemplo
+
+21. ¿Para qué se suele utilizar la excepción SVC? Expliquelo dentro de un marco de un sistema operativo embebido.
+
+ISA
+1. ¿Qué son los sufijos y para qué se los utiliza? Dé un ejemplo
+
+2. ¿Para qué se utiliza el sufijo ‘s’? Dé un ejemplo
+
+3. ¿Qué utilidad tiene la implementación de instrucciones de aritmética saturada? Dé un ejemplo con operaciones con datos de 8 bits.
+
+4. Describa brevemente la interfaz entre assembler y C ¿Cómo se reciben los argumentos de las funciones? ¿Cómo se devuelve el resultado? ¿Qué registros deben guardarse en la pila antes de ser modificados?
+
+5. ¿Qué es una instrucción SIMD? ¿En qué se aplican y que ventajas reporta su uso? Dé un ejemplo.
 
 
 
