@@ -13,6 +13,7 @@
 .global asm_filtroVentana10
 .global asm_pack32to16
 .global asm_max
+.global asm_invertir
 .global asm_svc
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -357,6 +358,42 @@
 		sub		r0, r4, r5			/* r0 = longitud - posicion actual	*/
 		pop		{r4-r6}
        	bx		lr
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ Prototipo en "C":
+@ extern void asm_invertir (uint16_t * vector, uint32_t longitud);
+@
+@ Parametros recibidos:
+@   r0: *vector
+@  r1: longitud
+@  r2: Valor copiado apuntado por el vector
+@  r3: Vector nuevo
+@  r4: direccion del final del vector
+@  r5: variable auxiliar donde guardo el indice actual
+@  r6: auxiliar para calcular la resta
+.thumb_func
+	asm_invertir:
+		push	{r4-r6}
+		mov		r4, r1				/* r4 = Longitud			*/
+		sub		r4, #1				/* Decremento longitud en 1 */
+		lsl		r4, #1
+		lsr		r1, #1		      	/* Longitud /2              */
+		mov		r5, r0				/* Copio direcion a r5 		*/
+		add		r5, r5, r4			/* r5 = r5 + longitud - 1	*/
+	.loopinv:
+		ldrh	r2, [r0], #2  		/* aux = *vector[i]           	*/
+		mov		r6,	r2				/* vectorAux = aux						*/
+		ldrh	r3, [r5], -2 		/* vectorAux = *vector[longitud-1-i]   */
+    	mov 	r2, r3      		/* vector  = vectorAux         */
+    	sub		r0, 2
+    	strh	r2, [r0], #2  		/* *vector[i] = vector           */
+    	add		r5, 2
+    	strh	r6, [r5], -2  		/* *vector[i] = vector           */
+    	subs	r1, #1
+    	bne		.loopinv
+    	pop		{r4-r6}
+		bx		lr
+
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ Prototipo en "C":

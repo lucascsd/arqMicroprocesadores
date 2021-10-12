@@ -292,6 +292,26 @@ void maximoValor ( void )
 
 }
 
+void invertir ()
+{
+	uint16_t vectorIn[] = { 0xA030, 0x0056, 0x1230, 0x8100, 0x9465, 0x0878, 0xA129, 0xFFF0,
+			0xF1F1, 0xFF32, 0xF013 };
+	uint16_t vectorOut[] = { 0xA030, 0x0056, 0x1230, 0x8100, 0x9465, 0x0878, 0xA129, 0xFFF0,
+			0xF1F1, 0xFF32, 0xF013 };
+	uint32_t longitudVectorIn  = sizeof ( vectorIn ) / sizeof ( uint16_t );
+
+	*DWT_CYCCNT = 0;
+	c_invertir ( vectorIn, longitudVectorIn );
+	ciclos_c = *DWT_CYCCNT;
+	__BKPT (0);
+
+	*DWT_CYCCNT = 0;
+	asm_invertir ( vectorIn, longitudVectorIn );
+	ciclos_c = *DWT_CYCCNT;
+	__BKPT (0);
+
+
+}
 
 int main (void)
 {
@@ -313,7 +333,9 @@ int main (void)
 */
 //	corrimiento();
 
-	maximoValor();
+//	maximoValor();
+
+	invertir();
 
 	//   PrivilegiosSVC ();
 

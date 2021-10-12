@@ -118,3 +118,18 @@ int32_t c_max (int32_t * vectorIn, uint32_t longitud)
 
 	return posicionMax;
 }
+
+void c_invertir (uint16_t * vector, uint32_t longitud)
+{
+	uint16_t vectorAux = 0;
+	uint8_t pos = 0;
+
+	for ( uint8_t index = 0; index < longitud/2; index++)
+	{
+		vectorAux = vector[index];
+		pos = longitud - index - 1;
+		vector[index] = vector[pos];
+		vector[pos] = vectorAux;
+
+	}
+}
