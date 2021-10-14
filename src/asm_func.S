@@ -454,23 +454,30 @@
 @  r8: valor 1000
 .thumb_func
 	asm_eco_simd:
-		push	{r4-r7}
-		mov		r4, #882
+		push	{r4-r8}
+		mov		r8, 0
+		mov		r4, #442
 		sub		r4, #1
 	.loop882:
 		ldr		r5,[r0],4
 		str		r5,[r1],4
 		subs	r4, #1
 		bne		.loop882
+		mov		r6, #2048
+		mov		r4, #442
+		subs	r4, r6, r4
 	.loop4096:
-		mov		r6, #4096
-		sub		r4, r6, r4
+		mov		r7, 882
+		neg		r7, r7
+		ldr		r5,[r0, r7]
+		mov		r7, r5
 		ldr		r5,[r0],4
-		uhsub16 r5, r5, r5
+		shadd16 r5, r5, r8
+		sadd16	r5, r5, r7
 		str		r5,[r1],4
 		subs	r4, #1
 		bne		.loop4096
-    	pop		{r4-r7}
+    	pop		{r4-r8}
 		bx		lr
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@

@@ -322,7 +322,7 @@ void eco ()
 	uint16_t tiempoEco = 20;
 
 	*DWT_CYCCNT = 0;
-	c_eco_simd ( vectorIn, vectorOut, longitud, tiempoEco  );
+	c_eco ( vectorIn, vectorOut, longitud, tiempoEco  );
 	ciclos_c = *DWT_CYCCNT;
 	__BKPT (0);
 
