@@ -455,7 +455,21 @@
 .thumb_func
 	asm_eco_simd:
 		push	{r4-r7}
-
+		mov		r4, #882
+		sub		r4, #1
+	.loop882:
+		ldr		r5,[r0],4
+		str		r5,[r1],4
+		subs	r4, #1
+		bne		.loop882
+	.loop4096:
+		mov		r6, #4096
+		sub		r4, r6, r4
+		ldr		r5,[r0],4
+		uhsub16 r5, r5, r5
+		str		r5,[r1],4
+		subs	r4, #1
+		bne		.loop4096
     	pop		{r4-r7}
 		bx		lr
 
