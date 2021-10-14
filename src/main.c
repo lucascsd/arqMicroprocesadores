@@ -327,6 +327,11 @@ void eco ()
 	ciclos_c = *DWT_CYCCNT;
 	__BKPT (0);
 
+	*DWT_CYCCNT = 0;
+	asm_eco ( vectorIn, vectorOut, longitud, tiempoEco  );
+	ciclos_c = *DWT_CYCCNT;
+	__BKPT (0);
+
 }
 
 int main (void)

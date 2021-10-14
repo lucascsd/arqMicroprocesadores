@@ -14,6 +14,8 @@
 .global asm_pack32to16
 .global asm_max
 .global asm_invertir
+.global asm_eco
+.global asm_eco_simd
 .global asm_svc
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -247,10 +249,10 @@
 		add		r6, r7, #1			/* x = index + 1 */
 		sub		r6, r4				/* r6 = r6 - r4 */
 		udiv	r5, r3, r6			/* *vectorOut = sumaAux / x */
-		strh	r5, [r1], 2			/* Cargo valor r3 a la dirección que apunta r0 y apunto en la dirección +4, str(h) 									hace la parte alta 0x0000 */
+		strh	r5, [r1], 2			/* Cargo valor r3 a la dirección que apunta r0 y apunto en la dirección +4, str(h) hace la parte alta 0x0000 */
 		add		r7, #1
-		subs	r2, #1				/* Decremento valor de longitud directamente en el registro, no hace falta usar otro 								registro */
-		bne		.loopindex				/* Si no es igual a 0, itero. */
+		subs	r2, #1				/* Decremento valor de longitud directamente en el registro, no hace falta usar otro registro */
+		bne		.loopindex			/* Si no es igual a 0, itero. */
 		pop		{r4-r7}
        	bx		lr
 
@@ -361,16 +363,16 @@
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ Prototipo en "C":
-@ extern void asm_invertir (uint16_t * vector, uint32_t longitud);
+@ 	void asm_invertir (uint16_t * vector, uint32_t longitud);
 @
 @ Parametros recibidos:
 @   r0: *vector
 @  r1: longitud
 @  r2: Valor copiado apuntado por el vector
 @  r3: Vector nuevo
-@  r4: direccion del final del vector
-@  r5: variable auxiliar donde guardo el indice actual
-@  r6: auxiliar para calcular la resta
+@  r4: copia de longitud
+@  r5: *vectorOut
+@  r6: auxiliar donde almaceno temporalmente variable
 .thumb_func
 	asm_invertir:
 		push	{r4-r6}
@@ -394,8 +396,70 @@
     	pop		{r4-r6}
 		bx		lr
 
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ Prototipo en "C":
+@ void asm_eco ( int16_t * vectorIn, int16_t * vectorOut, uint16_t longitud, uint16_t tiempoEco  );
+@
+@ Parametros recibidos:
+@  r0: *vectorIn
+@  r1: *vectorOut
+@  r2: longitud
+@  r3: tiempo de Eco
+@  r4: numero de muestras N_eco
+@  r5: *vectorOut
+@  r6: valor 44100
+@  r7: vector[index - 882]/2
+@  r8: valor 1000
+.thumb_func
+	asm_eco:
+		push	{r4-r7}
+		mov		r6, #44100
+		mul		r4, r3, r6			/* N_eco = ( tiempoEco * 44100 ) 				*/
+		mov		r6, #4096
+		mov		r8, #1000
+		udiv	r4, r4, r8			/* N_eco / 1000;				 				*/
+		sub		r4, r6, r4			/* 4096 - 882 = 3214							*/
+		mov		r8, #1764
+//		neg		r8,	r8
+	.loopEco:
+		ldrh	r5, [r0], 2			/* *r0 = r5										*/
+		cmp		r2, r4				/* CMP index vs N_eco							*/
+		bge		.fnEco				/* Salto a funcion Eco cuando es menor e igual 	*/
+		strh	r5, [r1], 2			/* Almaceno dato donde apunta r1				*/
+		b		.loopDec
+	.fnEco:
+		ldrh	r7, [r0, r8]		/* vector[index - 882]/2						*/
+		lsr		r7, #1				/* r7 dividido en 2								*/
+		add		r5, r5, r7			/* r5 = r5 + r7									*/
+		strh	r5, [r1], 2			/* Almaceno dato donde apunta r1				*/
+	.loopDec:
+		subs	r2, #1
+    	bne		.loopEco
+    	pop		{r4-r7}
+		bx		lr
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ Prototipo en "C":
+@ void asm_eco ( int16_t * vectorIn, int16_t * vectorOut, uint16_t longitud, uint16_t tiempoEco  );
+@
+@ Parametros recibidos:
+@  r0: *vectorIn
+@  r1: *vectorOut
+@  r2: longitud
+@  r3: tiempo de Eco
+@  r4: numero de muestras N_eco
+@  r5: *vectorOut
+@  r6: valor 44100
+@  r7: vector[index - 882]/2
+@  r8: valor 1000
+.thumb_func
+	asm_eco_simd:
+		push	{r4-r7}
+
+    	pop		{r4-r7}
+		bx		lr
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ Prototipo en "C":
 @   void asm_svc (void)
 @
