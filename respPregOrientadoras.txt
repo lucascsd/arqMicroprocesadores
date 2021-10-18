@@ -130,13 +130,34 @@ Mediante la excepcion SVC, el microprocesador permite pasar del modo no privileg
 ISA
 1. ¿Qué son los sufijos y para qué se los utiliza? Dé un ejemplo
 
+los sufijos son condiciones que se indican mediante letras y se agregan a las intstrucciones para indicarles diferentes funciones adicionales a la instrucion principal. Ejemplo sufijos b, sb, h, sh junto a las instruciones ldr{cond} y str{cond}. 
+
 2. ¿Para qué se utiliza el sufijo ‘s’? Dé un ejemplo
+
+El sufijo s le indica a la operación de la instrucion que actualice los flags si se cumple alguna condicion. Por ejemplo, ADD{S} y SUB{S]
 
 3. ¿Qué utilidad tiene la implementación de instrucciones de aritmética saturada? Dé un ejemplo con operaciones con datos de 8 bits.
 
+La aritmetica satura permite trabajar los desbordamientos de las aplicaciones para que al llegar a su maximo valor o superior, tengamos siempre un maximo valor o minimo valor ( para valores signados) y no valores erroneos. Al usar la instrucion usat, si le indicamos que satura en el 4 bit, todos valores por encima de 0x0F, el microprocesador saturara al valor 0x0F.
+
 4. Describa brevemente la interfaz entre assembler y C ¿Cómo se reciben los argumentos de las funciones? ¿Cómo se devuelve el resultado? ¿Qué registros deben guardarse en la pila antes de ser modificados?
 
+Los primeros 4 argumentos de las funciones se reciben en los registros r0, r1, r2 y r3. El resultado siempre se devuelve en el registro r0 si existe return en su prototipo en C. Deben guardarse los registros del 44 al r12 medianto un push y luego recuperarlos mediante un pop.
+
 5. ¿Qué es una instrucción SIMD? ¿En qué se aplican y que ventajas reporta su uso? Dé un ejemplo.
+
+Son instrucciones de ejecución paralela en donde el registro de entrada es utilizado en dos partes para las instruccioens SIMD16 o en cuatro partes para las SIMD8. Esto permite ejecuciones de mayore velocidad, como desventaja puede observarse que en las mismas no se pude actualizar las banderas por lo que el uso de las SIMD queda asociado al procesamiento de datos y no al control de ejecución del programa.
+Por ejemplo,
+		shadd8 r5, r5, r8
+		Adición de media palabra paralela para luego dividir a la mitad.
+		
+		r5	|---- 8 bit high ---||---- 8 bit low ---|
+					+					+
+		r8	|---- 8 bit high ---||---- 8 bit low ---|
+		---------------------------------------------
+		r5	|---- 8 bit high ---||---- 8 bit low ---|
+			--------------------  -------------------
+					2						2
 
 
 
