@@ -90,19 +90,42 @@ El diseño de los procesadores Cortex-M3 y Cortex-M4 admite tres niveles fijos d
 
 14. ¿Qué es el CMSIS? ¿Qué función cumple? ¿Quién lo provee? ¿Qué ventajas aporta?
 
+CMSIS, es el estándar de interfaz de software del microcontrolador ARM® Cortex. 
+Es una capa de abstracción de hardware independiente del proveedor de la serie de procesadores Cortex-M.
+CMSIS simplifica la reutilización del software.
+
 15. Cuando ocurre una interrupción, asumiendo que está habilitada ¿Cómo opera el microprocesador para atender a la subrutina correspondiente? Explique con un ejemplo
+
+El NVIC verifica el nivel de prioridad de la interrupción para conocer su nivel de prioridad. 
+Si la interrupción tiene mayor prioridad, la tarea que se está ejecutando se interrumpe y se salvaguarda todo en contexto en los registros de la pila como el valor de retorno del PC. 
+A continuación pasa a ejecutarse el handler de la interrupción. Tambien se ejecuta la excepción de retorno, en la cual se vuelve a cargar el contexto antes de la interrupción.
 
 16. Explique las características avanzadas de atención a interrupciones: tail chaining y late arrival.
 
+Tail Chaining se produce al pasar de una interrupcion a otra de mayor prioridad.
+Late Arrival se produce cuando se atiende una interrupciones dentro de otra interrupción, la ejecución de la entrada al handler de esa interupción se genera una de mayor prioridad. Cuando termina de ejecutarse la excepción de mayor prioridad, en vez de hacer el unstacking y el stacking de nuevo para ingresar a la excepción pendiente, el procesador salta ese paso e ingresa directamente al handler de la excepción pendiente y usa el mismo contexto.
+
 17. ¿Qué es el systick? ¿Por qué puede afirmarse que su implementación favorece la portabilidad de los sistemas operativos embebidos?
+
+Los procesadores Cortex-M tienen un pequeño temporizador integrado llamado temporizador SysTick. Está integrado como parte del NVIC y puede generar la excepción SysTick. El temporizador SysTick es un temporizador de disminución simple de 24 bits y puede funcionar con la frecuencia del reloj del procesador o desde una frecuencia de reloj de referencia (normalmente una fuente de reloj en el chip).
 
 18. ¿Qué funciones cumple la unidad de protección de memoria (MPU)?
 
+La MPU es un dispositivo programable que se puede usar para definir permisos de acceso a la memoria (por ejemplo, acceso privilegiado o acceso completo) y atributos de memoria (por ejemplo, almacenable en búfer, almacenable en caché) para diferentes regiones de memoria.
+
 19. ¿Cuántas regiones pueden configurarse como máximo? ¿Qué ocurre en caso de haber solapamientos de las regiones? ¿Qué ocurre con las zonas de memoria no cubiertas por las regiones definidas?
+
+La MPU en los procesadores Cortex-M3 y Cortex-M4 puede admitir hasta ocho regiones de memoria programables, cada una con sus propias direcciones de inicio, tamaños y configuraciones programables.
+Si un acceso a la memoria viola los permisos de acceso definidos por la MPU, o accede a una ubicación de memoria que no está definida en las regiones MPU programadas, la transferencia se bloquearía y se dispararía una excepción de falla. El manejador de excepciones de fallas desencadenado podría ser la falla MemManage o la excepción HardFault. 
 
 20. ¿Para qué se suele utilizar la excepción PendSV? ¿Cómo se relaciona su uso con el resto de las excepciones? Dé un ejemplo
 
+Una excepción que suele utilizar un sistema operativo en procesos como el cambio de contexto.
+El cambio de contexto se lleva a cabo en PendSV, que normalmente se programa en el nivel de prioridad más bajo. Esto evita que suceda el cambio de contexto en medio de un controlador de interrupciones.
+
 21. ¿Para qué se suele utilizar la excepción SVC? Expliquelo dentro de un marco de un sistema operativo embebido.
+
+Mediante la excepcion SVC, el microprocesador permite pasar del modo no privilegia al modo privilegiado mediante una excepcion que se produce al hacer uso del handler del SVC.
 
 ISA
 1. ¿Qué son los sufijos y para qué se los utiliza? Dé un ejemplo
